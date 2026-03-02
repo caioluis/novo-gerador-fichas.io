@@ -311,6 +311,11 @@
   .trait-card.negative { border-left: 3px solid var(--danger); }
     
   .remove-corner { position: absolute; top: 10px; right: 10px; font-size: 0.8em; background: #333; color: #fff; border:none; padding: 2px 8px; cursor: pointer; border-radius: 3px;}
+  .drag-handle { position: absolute; top: 10px; left: 10px; cursor: grab; color: var(--text-muted); font-size: 1.1em; user-select: none; padding: 2px 6px; }
+  .drag-handle:active { cursor: grabbing; }
+  .trait-card { padding-left: 35px; }
+  .sortable-ghost { opacity: 0.4; }
+  .sortable-chosen { box-shadow: 0 0 15px var(--gold-glow); }
   .remove-corner:hover { background: var(--danger); }
   .sub-list { margin-top: 10px; padding-left: 15px; border-left: 2px solid var(--gold); }
   .sub-card { background: rgba(255,255,255,0.05); padding: 10px; margin-bottom: 5px; border-radius: 4px; position: relative; }
@@ -540,6 +545,7 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script>
 // FUNÇÃO GLOBAL DE INSERIR TAGS (BBCODE)
 function insertTag(fieldId, openTag, closeTag) {
@@ -711,7 +717,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function addManualTrait(type, name="", desc=""){
         const div = document.createElement("div");
         div.className = `dynamic-card trait-card ${type==='pos'?'positive':'negative'}`;
-        div.innerHTML = `<button type="button" class="remove-corner">X</button>
+        div.innerHTML = `<span class="drag-handle">☰</span><button type="button" class="remove-corner">X</button>
         <div class="form-group"><label class="form-label">Nome e Custo (Ex: Bilíngue — 3 pts)</label><input type="text" class="gen-input trait-name modifier-trigger watch-save" value="${name}"></div>
         <div class="form-group"><label class="form-label">Descrição</label><textarea class="gen-textarea trait-desc watch-save">${desc}</textarea></div>`;
         traitsContainer.appendChild(div);
@@ -723,6 +729,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById("add-trait-pos").addEventListener("click", ()=>addManualTrait('pos'));
     document.getElementById("add-trait-neg").addEventListener("click", ()=>addManualTrait('neg'));
+
+    Sortable.create(traitsContainer, {
+        handle: '.drag-handle',
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        onEnd: function() { recalcAll(); saveData(); }
+    });
 
     // === XP LOGIC ===
     function getActiveModifiers(){
